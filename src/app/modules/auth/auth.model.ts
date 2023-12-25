@@ -1,9 +1,11 @@
 import { Schema, model } from 'mongoose'
-import { IUser } from './auth.interface'
+import { IUser, UserModel } from './auth.interface'
 import AppError from '../../error/appError'
 import httpStatus from 'http-status'
+import bcrypt from 'bcrypt'
+import config from '../../config'
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema<IUser, UserModel>(
   {
     username: {
       type: String,
@@ -17,6 +19,8 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
+      required: true,
+      select: 0,
     },
     role: {
       type: String,
@@ -54,4 +58,30 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
-export const User = model<IUser>('user', userSchema)
+// We will use it to hash our password
+userSchema.pre('save', async function (next) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const user = this
+
+  // Hashing password and save into db
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bcrypt_salt_round),
+  )
+  next()
+})
+
+// reuseable static method for ckecking user exist
+userSchema.statics.isUserExistByUserName = async function (username: string) {
+  return await User.findOne({ username: username }).select('+password')
+}
+
+// reuseable static method for cheking if the password is matched
+userSchema.statics.isPasswordMatched = async function (
+  plainTextPassword,
+  hashPassword,
+) {
+  return await bcrypt.compare(plainTextPassword, hashPassword)
+}
+
+export const User = model<IUser, UserModel>('user', userSchema)
