@@ -2,21 +2,26 @@ import { Router } from 'express'
 import { CourseRoutes } from '../modules/course/course.route'
 import { CategoryRoutes } from '../modules/category/category.route'
 import { ReviewRoutes } from '../modules/review/review.route'
+import { AuthRoutes } from '../modules/auth/auth.route'
 
 const router = Router()
 
 const moduleRoutes = [
   {
-    path: '/',
+    path: '/api',
     route: CourseRoutes,
   },
   {
-    path: '/',
+    path: '/api',
     route: CategoryRoutes,
   },
   {
-    path: '/',
+    path: '/api',
     route: ReviewRoutes,
+  },
+  {
+    path: '/auth',
+    route: AuthRoutes,
   },
 ]
 
