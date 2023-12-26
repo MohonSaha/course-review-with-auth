@@ -8,15 +8,15 @@ const router = Router()
 
 const moduleRoutes = [
   {
-    path: '/api',
+    path: '/',
     route: CourseRoutes,
   },
   {
-    path: '/api',
+    path: '/',
     route: CategoryRoutes,
   },
   {
-    path: '/api',
+    path: '/',
     route: ReviewRoutes,
   },
   {

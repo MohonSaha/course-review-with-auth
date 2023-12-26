@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-vars */
 import { Model } from 'mongoose'
+import { USER_ROLE } from './auth.constant'
 
 export interface IUser {
   username: string
   email: string
   password: string
+  passwordChangeHistory?: [Date]
   role: 'user' | 'admin'
 }
 
@@ -12,9 +15,11 @@ export interface ILoginUser {
   password: string
 }
 
+export type TUserRole = keyof typeof USER_ROLE
+
 export interface UserModel extends Model<IUser> {
-  // eslint-disable-next-line no-unused-vars
-  isUserExistByUserName(id: string): Promise<IUser>
+  isUserExistByUserName(name: string): Promise<IUser>
+  isUserExistById(id: string): Promise<IUser>
 
   isPasswordMatched(
     // eslint-disable-next-line no-unused-vars

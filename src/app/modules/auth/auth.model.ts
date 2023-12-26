@@ -71,9 +71,14 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
-// reuseable static method for ckecking user exist
+// reuseable static method for ckecking user exist by username
 userSchema.statics.isUserExistByUserName = async function (username: string) {
   return await User.findOne({ username: username }).select('+password')
+}
+
+// reuseable static method for ckecking user exist by _id
+userSchema.statics.isUserExistById = async function (id: string) {
+  return await User.findOne({ _id: id }).select('+password')
 }
 
 // reuseable static method for cheking if the password is matched
