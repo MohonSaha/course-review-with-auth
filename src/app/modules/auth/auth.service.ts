@@ -1,10 +1,11 @@
 import httpStatus from 'http-status'
 import AppError from '../../error/appError'
-import { ILoginUser, IUser } from './auth.interface'
+import { ILoginUser, IPasswordHistory, IUser } from './auth.interface'
 import { User } from './auth.model'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import config from '../../config'
 import bcrypt from 'bcrypt'
+import { format } from 'date-fns'
 
 const registerUserIntoDB = async (payload: IUser) => {
   const result = await User.create(payload)
@@ -55,7 +56,6 @@ const changePassword = async (
   },
 ) => {
   // Check if the user is exist
-  console.log(userData)
   const user = await User.isUserExistById(userData?.id)
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found')
@@ -72,6 +72,49 @@ const changePassword = async (
     Number(config.bcrypt_salt_round),
   )
 
+  //   Check if the new password is the same as the current one
+  if (await User.isPasswordMatched(payload?.newPassword, user?.password)) {
+    const formattedTime = format(
+      new Date(user?.passwordChangeAt as Date),
+      "'(last used on' yyyy-MM-dd 'at' hh:mm a)",
+    )
+
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Password change failed. Ensure the new password is unique and not among the last 2 used ${formattedTime}.`,
+    )
+  }
+
+  // Check if the given password is in the last two password hsitory
+  const passwordHistory = user?.passwordChangeHistory as IPasswordHistory[]
+
+  const matchResults = await Promise.all(
+    passwordHistory.map(async (history) => {
+      const isMatch = await bcrypt.compare(
+        payload.newPassword,
+        history.password,
+      )
+      return { isMatch, history }
+    }),
+  )
+
+  const indexOfMatch = matchResults.findIndex((result) => result.isMatch)
+
+  if (indexOfMatch !== -1) {
+    const matchingHistory = matchResults[indexOfMatch].history
+
+    const formattedTime = format(
+      new Date(matchingHistory.time),
+      "'(last used on' yyyy-MM-dd 'at' hh:mm a)",
+    )
+
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Password change failed. Ensure the new password is unique and not among the last 2 used ${formattedTime}.`,
+    )
+  }
+
+  // Update password and passwordChangeHistory
   await User.findOneAndUpdate(
     {
       _id: userData.id,
@@ -79,7 +122,16 @@ const changePassword = async (
     },
     {
       password: newHashedPassword,
+      passwordChangeAt: new Date(),
+      $push: {
+        passwordChangeHistory: {
+          $each: [{ password: user?.password, time: new Date() }],
+          $position: 0,
+          $slice: 2, // Keep only the last two items
+        },
+      },
     },
+    { new: true }, // Return the modified document
   )
 
   return user

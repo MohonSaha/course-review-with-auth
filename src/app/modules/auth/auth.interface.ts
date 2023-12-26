@@ -2,11 +2,17 @@
 import { Model } from 'mongoose'
 import { USER_ROLE } from './auth.constant'
 
+export interface IPasswordHistory {
+  password: string
+  time: Date
+}
+
 export interface IUser {
   username: string
   email: string
   password: string
-  passwordChangeHistory?: [Date]
+  passwordChangeAt?: Date
+  passwordChangeHistory?: [IPasswordHistory]
   role: 'user' | 'admin'
 }
 
