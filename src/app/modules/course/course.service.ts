@@ -5,9 +5,11 @@ import { Course } from './course.model'
 import AppError from '../../error/appError'
 import httpStatus from 'http-status'
 import { Category } from '../category/category.model'
+import { JwtPayload } from 'jsonwebtoken'
 
-const createCourseIntoDB = async (payload: ICourse) => {
+const createCourseIntoDB = async (payload: ICourse, user: JwtPayload) => {
   const { categoryId } = payload
+  payload.createdBy = user.id
 
   // Check category validation
   const isCategoryExist = await Category.findById(categoryId)
@@ -36,11 +38,18 @@ const getAllCoursesFromDB = async (filter: any, options: any) => {
     .sort(options.sort)
     .skip(options.skip)
     .limit(options.limit)
+    .populate({
+      path: 'createdBy',
+      select: '_id username email role',
+    })
   return result
 }
 
 const getCourseWithReviewFromDB = async (id: string) => {
-  const course = await Course.findById(id)
+  const course = await Course.findById(id).populate({
+    path: 'createdBy',
+    select: '_id username email role',
+  })
   const reviews = await Review.find({ courseId: id })
   const result = { course, reviews }
   return result
@@ -83,6 +92,7 @@ const getTheBestCourseFromDB = async () => {
           provider: '$provider',
           durationInWeeks: '$durationInWeeks',
           details: '$details',
+          createdBy: '$',
         },
         _id: 0,
         averageRating: 1,
@@ -94,7 +104,11 @@ const getTheBestCourseFromDB = async () => {
   return result
 }
 
-const updateCourseIntoDB = async (id: string, payload: Partial<ICourse>) => {
+const updateCourseIntoDB = async (
+  id: string,
+  payload: Partial<ICourse>,
+  // user: JwtPayload,
+) => {
   const {
     details,
     tags,
@@ -103,6 +117,9 @@ const updateCourseIntoDB = async (id: string, payload: Partial<ICourse>) => {
     durationInWeeks,
     ...restCourseData
   } = payload
+
+  // payload.createdBy = user.id
+
   const modifiedUpdatedData: Record<string, unknown> = {
     ...restCourseData,
   }
@@ -207,7 +224,10 @@ const updateCourseIntoDB = async (id: string, payload: Partial<ICourse>) => {
     await session.commitTransaction()
     await session.endSession()
 
-    const result = await Course.findById(id).populate('tags.name')
+    const result = await Course.findById(id).populate('tags.name').populate({
+      path: 'createdBy',
+      select: '_id username email role',
+    })
     return result
   } catch (err) {
     await session.abortTransaction()

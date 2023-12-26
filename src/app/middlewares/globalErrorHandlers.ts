@@ -9,6 +9,8 @@ import handleCastError from '../error/handleCastError'
 import handleDuplicateError from '../error/handleDuplicateError'
 import AppError from '../error/appError'
 import handleValidationError from '../error/handleValidationError'
+import handleJwtError from '../error/handleJwtError'
+// import { handleJwtError } from '../error/handleJwtError'
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   // settign default values
@@ -34,6 +36,11 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     errorMessage = simplifiedError.errorMessage
   } else if (err?.code === 11000) {
     const simplifiedError = handleDuplicateError(err)
+    statusCode = simplifiedError.statusCode
+    message = simplifiedError.message
+    errorMessage = simplifiedError.errorMessage
+  } else if (err?.name === 'JsonWebTokenError') {
+    const simplifiedError = handleJwtError(err)
     statusCode = simplifiedError.statusCode
     message = simplifiedError.message
     errorMessage = simplifiedError.errorMessage

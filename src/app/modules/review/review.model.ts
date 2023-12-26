@@ -1,5 +1,20 @@
 import { Schema, model } from 'mongoose'
-import { IReview } from './review.interface'
+import { IReview, IUserData } from './review.interface'
+
+const userDataSchema = new Schema<IUserData>({
+  _id: {
+    type: Schema.Types.ObjectId,
+  },
+  username: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  role: {
+    type: String,
+  },
+})
 
 const reviewSchema = new Schema<IReview>(
   {
@@ -16,9 +31,11 @@ const reviewSchema = new Schema<IReview>(
       type: String,
       required: true,
     },
+    createdBy: userDataSchema,
   },
   {
     versionKey: false,
+    timestamps: true,
   },
 )
 

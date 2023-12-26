@@ -5,7 +5,7 @@ import catchAsync from '../../utils/catchAsync'
 import { Filters } from './course.constant'
 
 const createCourse = catchAsync(async (req, res) => {
-  const result = await CourseServices.createCourseIntoDB(req.body)
+  const result = await CourseServices.createCourseIntoDB(req.body, req.user)
 
   sendResponse(res, {
     success: true,
@@ -128,7 +128,11 @@ const getTheBestCourse = catchAsync(async (req, res) => {
 
 const updateCourse = catchAsync(async (req, res) => {
   const courseId = req.params.id
-  const result = await CourseServices.updateCourseIntoDB(courseId, req.body)
+  const result = await CourseServices.updateCourseIntoDB(
+    courseId,
+    req.body,
+    // req.user,
+  )
 
   sendResponse(res, {
     success: true,

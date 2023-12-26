@@ -72,11 +72,16 @@ const courseSchema = new Schema<ICourse>(
       type: Number,
     },
     details: detailsSchema,
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
+    },
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
     versionKey: false,
+    timestamps: true,
   },
 )
 

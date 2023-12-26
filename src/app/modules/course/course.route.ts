@@ -9,17 +9,18 @@ const router = express.Router()
 
 router.post(
   '/course',
-  auth(),
+  auth(USER_ROLE.admin),
   validateRequest(CourseValidations.createCourseValidationSchema),
   courseControllers.createCourse,
 )
 
-router.get('/courses', auth(USER_ROLE.admin), courseControllers.getAllCourses)
-router.get('/courses/:id', courseControllers.getCourseWithReview)
+router.get('/courses', courseControllers.getAllCourses)
+router.get('/courses/:id/reviews', courseControllers.getCourseWithReview)
 router.get('/course/best', courseControllers.getTheBestCourse)
 
 router.put(
   '/courses/:id',
+  auth(USER_ROLE.admin),
   validateRequest(CourseValidations.updateCourseValidationSchema),
   courseControllers.updateCourse,
 )

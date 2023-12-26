@@ -29,10 +29,12 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     passwordChangeAt: {
       type: Date,
+      select: 0,
     },
     passwordChangeHistory: {
       type: [passwordHistorySchema],
       default: [],
+      select: 0,
     },
     role: {
       type: String,

@@ -35,7 +35,7 @@ const loginUser = async (payload: ILoginUser) => {
   }
 
   const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret as string, {
-    expiresIn: '15d',
+    expiresIn: '10d',
   })
 
   // Exclude the password field from the result object
@@ -127,11 +127,11 @@ const changePassword = async (
         passwordChangeHistory: {
           $each: [{ password: user?.password, time: new Date() }],
           $position: 0,
-          $slice: 2, // Keep only the last two items
+          $slice: 2,
         },
       },
     },
-    { new: true }, // Return the modified document
+    { new: true },
   )
 
   return user
