@@ -9,8 +9,7 @@ import handleCastError from '../error/handleCastError'
 import handleDuplicateError from '../error/handleDuplicateError'
 import AppError from '../error/appError'
 import handleValidationError from '../error/handleValidationError'
-import handleJwtError from '../error/handleJwtError'
-// import { handleJwtError } from '../error/handleJwtError'
+import jwtError from '../error/jwtError'
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   // settign default values
@@ -39,11 +38,10 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode = simplifiedError.statusCode
     message = simplifiedError.message
     errorMessage = simplifiedError.errorMessage
-  } else if (err?.name === 'JsonWebTokenError') {
-    const simplifiedError = handleJwtError(err)
-    statusCode = simplifiedError.statusCode
-    message = simplifiedError.message
-    errorMessage = simplifiedError.errorMessage
+  } else if (err instanceof jwtError) {
+    statusCode = err.statusCode
+    message = 'Unauthorized Access'
+    errorMessage = err.message
   } else if (err instanceof AppError) {
     statusCode = err.statusCode
     message = 'App Error'
@@ -58,8 +56,14 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     success: false,
     message,
     errorMessage,
-    errorDetails: err,
-    stack: config.NODE_ENV === 'production' ? err?.stack : null,
+    errorDetails: err instanceof jwtError ? null : err,
+    // stack: config.NODE_ENV === 'production' ? err?.stack : null,
+    stack:
+      config.NODE_ENV === 'production'
+        ? err instanceof jwtError
+          ? null
+          : err?.stack
+        : null,
   })
 }
 

@@ -8,7 +8,7 @@ import { USER_ROLE } from '../auth/auth.constant'
 const router = express.Router()
 
 router.post(
-  '/course',
+  '/courses',
   auth(USER_ROLE.admin),
   validateRequest(CourseValidations.createCourseValidationSchema),
   courseControllers.createCourse,

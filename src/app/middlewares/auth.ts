@@ -1,10 +1,10 @@
 import { NextFunction, Response, Request } from 'express'
 import catchAsync from '../utils/catchAsync'
-import AppError from '../error/appError'
 import httpStatus from 'http-status'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import config from '../config'
 import { TUserRole } from '../modules/auth/auth.interface'
+import jwtError from '../error/jwtError'
 
 const auth = (...requiredRole: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -12,7 +12,10 @@ const auth = (...requiredRole: TUserRole[]) => {
 
     // If the used is sent token
     if (!token) {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized')
+      throw new jwtError(
+        httpStatus.UNAUTHORIZED,
+        'You do not have the necessary permissions to access this resource.',
+      )
     }
 
     // Check if the token is valid
@@ -22,15 +25,18 @@ const auth = (...requiredRole: TUserRole[]) => {
       function (err, decoded) {
         // err
         if (err) {
-          throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized')
+          throw new jwtError(
+            httpStatus.UNAUTHORIZED,
+            'You do not have the necessary permissions to access this resource.',
+          )
         }
 
         // role checking
         const role = (decoded as JwtPayload).role
         if (requiredRole && !requiredRole.includes(role)) {
-          throw new AppError(
+          throw new jwtError(
             httpStatus.UNAUTHORIZED,
-            'You are not authorized vai',
+            'You do not have the necessary permissions to access this resource.',
           )
         }
 
