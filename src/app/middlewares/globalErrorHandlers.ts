@@ -10,12 +10,14 @@ import handleDuplicateError from '../error/handleDuplicateError'
 import AppError from '../error/appError'
 import handleValidationError from '../error/handleValidationError'
 import jwtError from '../error/jwtError'
+import customError from '../error/customError'
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   // settign default values
   let statusCode = 500
   let message = 'Something went Wrong!!!'
   let errorMessage: string = ''
+  let data = null
 
   // validation dynamic message
   if (err instanceof ZodError) {
@@ -42,6 +44,11 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode = err.statusCode
     message = 'Unauthorized Access'
     errorMessage = err.message
+  } else if (err instanceof customError) {
+    statusCode = err.statusCode
+    message = err.message
+    // errorMessage = err.message
+    data = err.data
   } else if (err instanceof AppError) {
     statusCode = err.statusCode
     message = 'App Error'
@@ -56,8 +63,8 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     success: false,
     message,
     errorMessage,
+    data,
     errorDetails: err instanceof jwtError ? null : err,
-    // stack: config.NODE_ENV === 'production' ? err?.stack : null,
     stack:
       config.NODE_ENV === 'production'
         ? err instanceof jwtError
