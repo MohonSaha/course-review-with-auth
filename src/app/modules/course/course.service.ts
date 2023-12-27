@@ -78,6 +78,20 @@ const getTheBestCourseFromDB = async () => {
       $limit: 1,
     },
     {
+      $lookup: {
+        from: 'users',
+        localField: 'createdBy',
+        foreignField: '_id',
+        as: 'createdBy',
+      },
+    },
+    {
+      $unwind: {
+        path: '$createdBy',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $project: {
         course: {
           _id: '$_id',
@@ -92,7 +106,12 @@ const getTheBestCourseFromDB = async () => {
           provider: '$provider',
           durationInWeeks: '$durationInWeeks',
           details: '$details',
-          createdBy: '$',
+          createdBy: {
+            _id: '$createdBy._id',
+            username: '$createdBy.username',
+            email: '$createdBy.email',
+            role: '$createdBy.role',
+          },
         },
         _id: 0,
         averageRating: 1,

@@ -48,6 +48,7 @@ const loginUser = async (payload: ILoginUser) => {
   }
 }
 
+// Change the password
 const changePassword = async (
   userData: JwtPayload,
   payload: {
@@ -89,7 +90,7 @@ const changePassword = async (
   const passwordHistory = user?.passwordChangeHistory as IPasswordHistory[]
 
   const matchResults = await Promise.all(
-    passwordHistory.map(async (history) => {
+    passwordHistory?.map(async (history) => {
       const isMatch = await bcrypt.compare(
         payload.newPassword,
         history.password,
@@ -104,7 +105,7 @@ const changePassword = async (
     const matchingHistory = matchResults[indexOfMatch].history
 
     const formattedTime = format(
-      new Date(matchingHistory.time),
+      new Date(matchingHistory?.time),
       "'(last used on' yyyy-MM-dd 'at' hh:mm a)",
     )
 
