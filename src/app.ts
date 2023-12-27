@@ -14,7 +14,7 @@ app.use(cors())
 app.use('/api', router)
 
 const test = (req: Request, res: Response) => {
-  res.send('Course Review Application Server Is Running....')
+  res.send('Course Review (Assignment-4) Server Is Running....')
 }
 
 // Test route

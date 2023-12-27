@@ -20,12 +20,18 @@ const registerUser = catchAsync(async (req, res) => {
 
 const loginUser = catchAsync(async (req, res) => {
   const result = await AuthService.loginUser(req.body)
+  const modifiedResult = JSON.parse(JSON.stringify(result))
+  if (modifiedResult.user) {
+    delete modifiedResult.user.password
+    delete modifiedResult.user.passwordChangeHistory
+    delete modifiedResult.user.passwordChangeAt
+  }
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: 'User login successful',
-    data: result,
+    data: modifiedResult,
   })
 })
 
@@ -37,7 +43,7 @@ const changePassword = catchAsync(async (req, res) => {
   const modifiedResult = JSON.parse(JSON.stringify(result))
   delete modifiedResult.password
   delete modifiedResult.passwordChangeHistory
-  delete modifiedResult.passwordChangeAt
+  delete modifiedResult.passwordChang
 
   sendResponse(res, {
     success: true,
