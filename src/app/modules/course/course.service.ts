@@ -46,10 +46,15 @@ const getAllCoursesFromDB = async (filter: any, options: any) => {
 }
 
 const getCourseWithReviewFromDB = async (id: string) => {
-  const course = await Course.findById(id).populate({
+  const courseData = await Course.findById(id)
+  if (!courseData) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Course not found in database')
+  }
+  const course = courseData.populate({
     path: 'createdBy',
     select: '_id username email role',
   })
+
   const reviews = await Review.find({ courseId: id })
   const result = { course, reviews }
   return result
